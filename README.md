@@ -13,4 +13,24 @@ The main feature of EON is its "reasonability", which means the task ontology ca
 
 ## Demo
 
-Reproducable example and detailed instruction are coming soon.
+To check how the reasoner works, you can reproduce the following very basic demo. 
+
+Look for the firmware in `examples/pager`. It is a "pager for silent things". For example, if you forgot where you put your cell phone, you can call it and locate where it is by the ring signal. There are a lot of other things you might like to find in a same way, but you cannot: glasses, wallet, keychain, etc. The pager presented here can be attached to the "silent thing" and "called" anytime: it maintains a WiFi access point and buzzes whenever someone connects. The pager also has a "night mode": when the illumination is low, the frequency of buzzer signal decreases, so it is perceived quieter. For testing purposes, following hardware is used: ESP8266 MCU with a built-in 802.11 (WiFi) capable communication module as a core, passive buzzer HW-508 to play sound and photoresistor VT90N2 to measure illumination strength. These components are very common and cheap, so it should be easy to reproduce.
+
+*First*, assemble the device according to the following schematics:
+
+![pager schematics](https://github.com/scivi-tools/scivi.eon/blob/master/examples/pager/pager.png)
+
+*Second*, open `pager.ino` in the Arduino IDE and upload the firmware to the ESP8266 of the device you assembled. This step should be done only once! After that you can alter the device behavior by uploading task ontologies only, without touching the firmware.
+
+*Third*, connect to WiFi network called `EON`. This is a hotspot created by ESP8266 on startup.
+
+*Fourth*, compile and start the [SciVi.Web](https://github.com/scivi-tools/scivi.web) server. Go to `127.0.0.1:5000/es` (in case you run it locally by `run.sh`).
+
+*Fifth*, click `Load` on the page and choose the file `examples/pager/pager.json`. This is a DFD describing the pager's functioning.
+
+*Sixth*, click `Upload` on the page, and than `Upload` on the new screen. You can also download the task ontology in ONT format (ONTOLIS-compatible).
+
+After that, the device is up and running. It will change the network from `EON` to `SciVi` and if you connect to it, buzzer will start buzzing, altering its frequency from 100 to 1000 Hz according to the illumination.
+
+You can freely change the DFD, upload the task ontology again and get new device behavior without uploading new firmware.
