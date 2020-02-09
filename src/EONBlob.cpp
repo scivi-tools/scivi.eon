@@ -24,8 +24,12 @@ using namespace EON;
 
 Blob::Blob()
 {
-    m_linkStart = 0;
-    m_attrStart = 0;
+#if defined(ESP32) || defined(ESP8266)
+    EEPROM.begin(4096);
+#endif // ESP
+    m_linkStart = sizeof(Offset);
+    m_attrStart = m_linkStart + offset(0) + sizeof(Offset);
+    m_blobLen = offset(0) + offset(m_attrStart - sizeof(Offset)) + sizeof(Offset) * 2;
 }
 
 bool Blob::load(uint8_t *blob, Offset length)
@@ -35,9 +39,6 @@ bool Blob::load(uint8_t *blob, Offset length)
 #ifdef EON_RAM
     memcpy(m_blob, blob, length);
 #else
-#if defined(ESP32) || defined(ESP8266)
-    EEPROM.begin(length);
-#endif // ESP
     if (length > EEPROM.length())
         return false;
 #if defined(ESP32) || defined(ESP8266)
