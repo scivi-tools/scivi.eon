@@ -20,7 +20,7 @@
 #ifndef __EONVALUE_H__
 #define __EONVALUE_H__
 
-#include <stdint.h>
+#include "EONHeap.h"
 
 
 namespace EON
@@ -44,19 +44,22 @@ namespace EON
         static constexpr const uint8_t INT32   = 5;
         static constexpr const uint8_t FLOAT   = 6;
         static constexpr const uint8_t CSTRING = 7;
+        static constexpr const uint8_t DSTRING = 8;
+        static constexpr const uint8_t VEC3    = 9;
+        static constexpr const uint8_t VEC4    = 10;
         static constexpr const uint8_t INVALID = 0xFF;
 
         uint8_t type;
         union
         {
-            uint8_t  ub;       // type = 0
-            uint16_t us;       // type = 1
-            uint32_t ui;       // type = 2
-            int8_t   b;        // type = 3
-            int16_t  s;        // type = 4
-            int32_t  i;        // type = 5
-            float    f;        // type = 6
-            Offset   constStr; // type = 7
+            uint8_t  ub;   // type = 0
+            uint16_t us;   // type = 1
+            uint32_t ui;   // type = 2
+            int8_t   b;    // type = 3
+            int16_t  s;    // type = 4
+            int32_t  i;    // type = 5
+            float    f;    // type = 6
+            Offset   addr; // type = 7, 8, 9, 10
         } value;
 
         inline static Value invalidValue()
@@ -70,6 +73,17 @@ namespace EON
             Value result;
             result.type = FLOAT;
             result.value.f = v;
+            return result;
+        };
+        inline static Value vec3Value(float x, float y, float z, Heap &heap)
+        {
+            Value result;
+            result.type = VEC3;
+            result.value.addr = heap.alloc(3 * sizeof(float));
+            float *vec3 = heap.get<float>(result.value.addr);
+            vec3[0] = x;
+            vec3[1] = y;
+            vec3[2] = z;
             return result;
         };
 
@@ -103,7 +117,10 @@ namespace EON
                     return static_cast<T>(value.f);
 
                 case CSTRING:
-                    return static_cast<T>(value.constStr);
+                case DSTRING:
+                case VEC3:
+                case VEC4:
+                    return static_cast<T>(value.addr);
 
                 default:
                     return static_cast<T>(0);

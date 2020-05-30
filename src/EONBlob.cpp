@@ -101,7 +101,7 @@ Value Blob::value(uint8_t selector, Offset &index) const
             break;
 
         case Value::CSTRING:
-            result.value.constStr = index; // In fact a pointer to the string in memory.
+            result.value.addr = index; // In fact a pointer to the string in memory.
             while (byte(index) != 0x0) // String is null-terminated.
                 ++index;
             ++index;

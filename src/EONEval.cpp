@@ -28,6 +28,7 @@ void Eval::turn()
 
     m_stack.clear();
     m_ringBuf.clear();
+    m_heap.clear();
     m_linkIndex = 0;
 
     Offset attrIndex = m_blob.attrStart();
@@ -51,7 +52,7 @@ void Eval::turn()
                     break;
 
                 case Blob::Function:
-                    val = m_func.call(m_blob.function(selector, attrIndex), m_stack, m_blob);
+                    val = m_func.call(m_blob.function(selector, attrIndex), m_stack, m_heap, m_blob);
                     if (!val.invalid())
                         m_stack.push(val);
                     break;

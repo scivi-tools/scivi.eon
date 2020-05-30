@@ -1,5 +1,5 @@
 /* 
- * EONEval.h
+ * EONHeap.h
  *
  * This file is part of SciVi (https://github.com/scivi-tools).
  * Copyright (c) 2019 Konstantin Ryabinin.
@@ -17,31 +17,48 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __EONEVAL_H__
-#define __EONEVAL_H__
+#ifndef __EONHEAP_H__
+#define __EONHEAP_H__
 
-#include "EONFunc.h"
+#include <stdint.h>
 
+
+#define EON_HEAP_CAPACITY 1024
 
 namespace EON
 {
-    class Eval
+    class Heap
     {
     private:
-        Blob m_blob;
-        Func m_func;
-        Stack m_stack;
-        RingBuffer m_ringBuf;
-        Heap m_heap;
-        Offset m_linkIndex;
-
-        Value eval(Node address);
+        uint8_t m_heap[EON_HEAP_CAPACITY];
+        uint16_t m_ptr;
 
     public:
-        inline bool load(uint8_t *blob, Offset length) { return m_blob.load(blob, length); };
-        inline void setup() { m_func.setup(); };
-        void turn();
+        inline void clear()
+        {
+            m_ptr = 0;
+        };
+
+        inline uint16_t alloc(uint16_t n)
+        {
+            if (m_ptr + n >= EON_HEAP_CAPACITY)
+            {
+                m_ptr = n;
+                return 0;
+            }
+            else
+            {
+                uint16_t result = m_ptr;
+                m_ptr += n;
+                return result;
+            }
+        };
+
+        template<class T> inline T *get(uint16_t index)
+        {
+            return reinterpret_cast<T *>(&m_heap[index]);
+        };
     };
 };
 
-#endif // __EONEVAL_H__
+#endif // __EONHEAP_H__
