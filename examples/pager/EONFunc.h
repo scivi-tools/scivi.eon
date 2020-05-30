@@ -23,7 +23,7 @@ namespace EON
         void begin();
         void end();
 
-        Value call(uint8_t opCode, Stack &stack, Blob &bolb);
+        Value call(uint8_t opCode, Stack &stack, RingHeap &heap, Blob &bolb);
     };
 };
 

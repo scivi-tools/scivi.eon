@@ -54,7 +54,7 @@ void Func::end()
 #define ARG(type) (stack.pop().typedValue<type>())
 #define VALUE(v) (Value::floatValue(v))
 
-Value Func::call(uint8_t opCode, Stack &stack, Blob &blob)
+Value Func::call(uint8_t opCode, Stack &stack, RingHeap &heap, Blob &blob)
 {
     switch (opCode)
     {
