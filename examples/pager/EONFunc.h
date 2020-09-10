@@ -16,6 +16,8 @@ namespace EON
     {
     private:
         bool m_wifiOn;
+        int m_meanderTime;
+        bool m_meanderState;
         int mapPin(int pin) const;
 
     public:
@@ -23,7 +25,7 @@ namespace EON
         void begin();
         void end();
 
-        Value call(uint8_t opCode, Stack &stack, RingHeap &heap, Blob &bolb);
+        Value call(uint8_t opCode, Stack &stack, Heap &heap, Blob &bolb);
     };
 };
 

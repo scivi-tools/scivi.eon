@@ -23,6 +23,8 @@ void Func::setup()
     LOG("SETUP\n");
 
     m_wifiOn = false;
+    m_meanderTime = millis();
+    m_meanderState = false;
 }
 
 void Func::begin()
@@ -45,7 +47,7 @@ void Func::end()
 #define F_LE                 7
 #define F_EQ                 8
 #define F_dw                 9
-#define F_osc                10
+#define F_meander            10
 #define F_wifiAP             11
 #define F_wifiAPClientsCount 12
 #define F_adc                13
@@ -54,7 +56,7 @@ void Func::end()
 #define ARG(type) (stack.pop().typedValue<type>())
 #define VALUE(v) (Value::floatValue(v))
 
-Value Func::call(uint8_t opCode, Stack &stack, RingHeap &heap, Blob &blob)
+Value Func::call(uint8_t opCode, Stack &stack, Heap &heap, Blob &blob)
 {
     switch (opCode)
     {
@@ -137,15 +139,28 @@ Value Func::call(uint8_t opCode, Stack &stack, RingHeap &heap, Blob &blob)
             LOG("digitalWrite %d %d\n", pin, x);
             MCU
             (
+                pin = mapPin(pin);
+                pinMode(pin, OUTPUT);
                 digitalWrite(pin, x ? HIGH : LOW);
             )
             break;
         }
 
-        case F_osc:
+        case F_meander:
         {
-            LOG("oscillate\n");
-            break;
+            int phase = ARG(int);
+            int period = ARG(int);
+            LOG("oscillate %d %d\n", period, phase);
+            MCU
+            (
+                int now = millis();
+                if (now + phase - m_meanderTime >= period / 2)
+                {
+                    m_meanderState = !m_meanderState;
+                    m_meanderTime = now;
+                }
+            )
+            return VALUE(m_meanderState ? 1 : 0);
         }
 
         case F_wifiAP:
