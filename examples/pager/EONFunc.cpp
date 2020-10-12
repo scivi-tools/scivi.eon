@@ -203,6 +203,7 @@ Value Func::call(uint8_t opCode, Stack &stack, Heap &heap, Blob &blob)
             MCU
             (
                 result = analogRead(0);
+                delay(3);
             )
             return VALUE(result);
         }
