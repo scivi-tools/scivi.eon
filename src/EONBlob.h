@@ -31,6 +31,7 @@
 
 
 #define EON_BLOB_CAPACITY 1024
+#define EON_BLOB_OFFSET 64
 
 namespace EON
 {
@@ -149,7 +150,7 @@ namespace EON
 #ifdef EON_RAM
         return m_blob[index];
 #else
-        return EEPROM[index];
+        return EEPROM[index + EON_BLOB_OFFSET];
 #endif // EON_RAM
     }
 
