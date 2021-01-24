@@ -112,6 +112,7 @@ EON::Eval g_eval;
 
 void connectWiFi(const char *ssid, const char *pass)
 {
+    WiFi.mode(WIFI_STA);
     if (ssid && pass)
         WiFi.begin(ssid, pass);
     else
@@ -155,6 +156,7 @@ void connectWiFi(const char *ssid, const char *pass)
         }
     }
 
+    WiFi.mode(WIFI_AP_STA);
     WiFi.softAP(g_SSID, g_pass);
 
     Serial.println("[SETUP] access point is up");
@@ -167,14 +169,14 @@ void connectWiFi(const char *ssid, const char *pass)
 void webServerRoot()
 {
     g_webServer.sendHeader("Location", "/index.html", true);
-    g_webServer.send(200, "text/plain", g_index);
+    g_webServer.send(200, "text/html", g_index);
 }
 
 void webServerSave()
 {
     String ssid = g_webServer.arg("ssid");
     String pass = g_webServer.arg("pass");
-    g_webServer.send(200, "text/plain", g_saveOK);
+    g_webServer.send(200, "text/html", g_saveOK);
     connectWiFi(ssid.c_str(), pass.c_str());
 }
 
