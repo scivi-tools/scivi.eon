@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'/>
+        <title>SciVi EON</title>
+        <style>
+            body {
+                font: 14px Helvetica Neue, Helvetica, Arial, sans-serif;
+            }
+            form {
+                padding: 10px 10px 0px 10px;
+                border: 2px solid;
+                border-radius: 10px;
+                width: 250px;
+                left: 50%;
+                top: 50%;
+                position: absolute;
+                -webkit-transform: translate3d(-50%, -50%, 0);
+                -moz-transform: translate3d(-50%, -50%, 0);
+                transform: translate3d(-50%, -50%, 0);
+            }
+            .field {
+              width: 100%;
+              margin-bottom: 10px;
+              display: flex;
+            }
+            .title {
+                text-align: center;
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            label {
+                text-align: right;
+                margin-right: 5px;
+                padding-top: 1px;
+                width: 110px;
+            }
+            input {
+                width: 100%;
+                font: 14px Helvetica Neue, Helvetica, Arial, sans-serif;
+                border: #000 1px solid;
+                border-radius: 5px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <form>
+            <div class='title'>WiFi Settings</div>
+            <div class='field'><label for='ssid'>SSID:</label><input type='text' id='ssid' name='ssid'/></div>
+            <div class='field'><label for='pass'>Password:</label><input type='text' id='pass' name='pass'/></div>
+            <div class='title'><input type='submit' value='Save'/></div>
+        </form>
+
+    </body>
+</html>
