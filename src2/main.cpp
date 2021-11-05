@@ -1,0 +1,19 @@
+
+#include <stdio.h>
+#include "EONEval.h"
+
+
+EON::Eval g_eval;
+
+int main(int argc, char **argv)
+{
+    // EON::Value value;
+    // uint32_t b = 10;
+    // value = b;
+    // float f = value;
+    // printf("%f\n", f);
+    uint8_t eon[] = {0x01, 0x02, 0x00, 0x01, 0x00, 0x09, 0x02, 0x00, 0x01, 0x02, 0x10, 0x01, 0x01, 0x00, 0x00, 0x00, 0x14, 0x02, 0x00, 0x00, 0x87, 0x01, 0x00, };
+    g_eval.load(eon, sizeof(eon));
+    g_eval.turn();
+    return 0;
+}
