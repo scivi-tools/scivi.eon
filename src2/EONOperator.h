@@ -10,29 +10,29 @@
 
 namespace EON
 {
-    static void foo(OpInstance &opInst)
+    static void distance(OpInstance &opInst) // mother = 3
     {
         opInst.output(0) = 42;
-        printf(">>> call foo\n");
+        printf(">>> call distance\n");
     }
 
-    static void bar(OpInstance &opInst)
+    static void webSocket(OpInstance &opInst) // mother = 216
     {
         int i = opInst.input(0);
-        printf(">>> call bar %d\n", i);
+        printf(">>> call webSocket %d, address = %d\n", i, (int)opInst.setting(0));
     }
 
     static void (*m_operators[])(OpInstance &) = 
     {
-        &foo,
-        &bar
+        &distance,
+        &webSocket
     };
 
     static MotherNodeID m_operatorsTableLen = 2;
 
     static MotherNodeID m_operatorsTable[] =
     {
-        20,
-        26
+        3,
+        216
     };
 };
