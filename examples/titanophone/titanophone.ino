@@ -102,4 +102,6 @@ void loop()
 
     g_webSocket.loop();
     g_webServer.handleClient();
+
+    delay(16);
 }

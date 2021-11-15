@@ -23,7 +23,7 @@ namespace EON
 
     static void webSocket(OpInstance &opInst) // mother UID = 1
     {
-        String msg = String("{") + String((int)opInst.setting(0)) + ":" + String((float)opInst.input(0)) + String("}");
+        String msg = String("[{\"") + String((int)opInst.setting(0)) + "\":" + String((float)opInst.input(0)) + String("}]");
         g_webSocket.broadcastTXT(msg);
     }
 
