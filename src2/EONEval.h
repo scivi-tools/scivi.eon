@@ -42,6 +42,7 @@ namespace EON
             return m_blob.load(blob, length);
         };
 
+        void setup();
         void turn();
     };
 };

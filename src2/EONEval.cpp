@@ -54,6 +54,11 @@ void Eval::exec(NodeID opInstID)
     m_opInstances[opInstID]->setCalled();
 }
 
+void Eval::setup()
+{
+    // nop.
+}
+
 void Eval::turn()
 {
     m_heap.clear();

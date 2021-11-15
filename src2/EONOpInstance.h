@@ -1,5 +1,5 @@
 /* 
- * EONOperator.h
+ * EONOpInstance.h
  *
  * This file is part of SciVi (https://github.com/scivi-tools).
  * Copyright (c) 2021 Konstantin Ryabinin.
@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __EONOPERATOR_H__
-#define __EONOPERATOR_H__
+#ifndef __EONOPINSTANCE_H__
+#define __EONOPINSTANCE_H__
 
 #include "EONBlob.h"
 
@@ -78,4 +78,4 @@ namespace EON
     };
 };
 
-#endif // __EONOPERATOR_H__
+#endif // __EONOPINSTANCE_H__

@@ -20,7 +20,10 @@
 #ifndef __EONBLOB_H__
 #define __EONBLOB_H__
 
- #include "EONValue.h"
+#ifndef EON_RAM
+#include <EEPROM.h>
+#endif // !EON_RAM
+#include "EONValue.h"
 
 
 #define EON_BLOB_CAPACITY 1024

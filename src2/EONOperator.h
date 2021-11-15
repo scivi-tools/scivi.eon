@@ -32,7 +32,7 @@ namespace EON
 
     static MotherNodeID m_operatorsTable[] =
     {
-        3,
-        216
+        2,
+        1
     };
 };

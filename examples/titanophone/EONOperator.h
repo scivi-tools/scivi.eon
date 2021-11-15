@@ -15,16 +15,16 @@ extern WebSocketsServer g_webSocket;
 
 namespace EON
 {
-    static void distance(OpInstance &opInst) // mother = 3
+    static void distance(OpInstance &opInst) // mother UID = 2
     {
-        opInst.output(0) = 42;
-        printf(">>> call distance\n");
+        opInst.output(0) = analogRead(0);
+        delay(3);
     }
 
-    static void webSocket(OpInstance &opInst) // mother = 216
+    static void webSocket(OpInstance &opInst) // mother UID = 1
     {
-        int i = opInst.input(0);
-        printf(">>> call webSocket %d, address = %d\n", i, (int)opInst.setting(0));
+        String msg = String("{") + String((int)opInst.setting(0)) + ":" + String((float)opInst.input(0)) + String("}");
+        g_webSocket.broadcastTXT(msg);
     }
 
     static void (*m_operators[])(OpInstance &) = 
@@ -37,8 +37,8 @@ namespace EON
 
     static MotherNodeID m_operatorsTable[] =
     {
-        3,
-        216
+        2,
+        1
     };
 };
 
