@@ -22,10 +22,17 @@ namespace EON
         printf(">>> call webSocket %d, address = %d\n", i, (int)opInst.setting(0));
     }
 
+    static void adc(OpInstance &opInst)
+    {
+        opInst.output(0) = 43;
+        printf(">>> call adc\n");
+    }
+
     static void (*m_operators[])(OpInstance &) = 
     {
         &distance,
-        &webSocket
+        &webSocket,
+        &adc
     };
 
     static MotherNodeID m_operatorsTableLen = 2;
@@ -33,6 +40,7 @@ namespace EON
     static MotherNodeID m_operatorsTable[] =
     {
         2,
-        1
+        1,
+        3
     };
 };
