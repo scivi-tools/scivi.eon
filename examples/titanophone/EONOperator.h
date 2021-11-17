@@ -17,8 +17,17 @@ namespace EON
 {
     static void distance(OpInstance &opInst) // mother UID = 2
     {
-        opInst.output(0) = analogRead(0);
-        delay(3);
+        const int trigPin = 2; // D4
+        const int echoPin = 0; // D3
+        pinMode(g_trigPin, OUTPUT);
+        pinMode(g_echoPin, INPUT);
+        digitalWrite(g_trigPin, LOW);
+        delayMicroseconds(2);
+        digitalWrite(g_trigPin, HIGH);
+        delayMicroseconds(10);
+        digitalWrite(g_trigPin, LOW);
+        long duration = pulseIn(g_echoPin, HIGH);
+        opInst.output(0) = (float)duration * 0.34f / 2.0f;
     }
 
     static void webSocket(OpInstance &opInst) // mother UID = 1
@@ -27,10 +36,17 @@ namespace EON
         g_webSocket.broadcastTXT(msg);
     }
 
+    static void adc(OpInstance &opInst) // mother UID = 3
+    {
+        opInst.output(0) = analogRead(0);
+        delay(3);
+    }
+
     static void (*m_operators[])(OpInstance &) = 
     {
         &distance,
-        &webSocket
+        &webSocket,
+        &adc
     };
 
     static MotherNodeID m_operatorsTableLen = 2;
@@ -38,7 +54,8 @@ namespace EON
     static MotherNodeID m_operatorsTable[] =
     {
         2,
-        1
+        1,
+        3
     };
 };
 
