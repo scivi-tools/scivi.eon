@@ -25,6 +25,7 @@
 
 
 #define EON_HEAP_CAPACITY 4096
+#define ALIGN(x, align) (((x + (align - 1)) / align) * align)
 
 namespace EON
 {
@@ -46,7 +47,7 @@ namespace EON
         template<class T> T *alloc(uint16_t count = 1)
         {
             T *result = reinterpret_cast<T*>(&m_heap[m_ptr]);
-            m_ptr += sizeof(T) * count;
+            m_ptr += ALIGN(sizeof(T) * count, 4);
             return result;
         };
     };
