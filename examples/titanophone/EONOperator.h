@@ -17,16 +17,16 @@ namespace EON
 {
     static void distance(OpInstance &opInst) // mother UID = 2
     {
-        const int trigPin = 2; // D4
-        const int echoPin = 0; // D3
-        pinMode(g_trigPin, OUTPUT);
-        pinMode(g_echoPin, INPUT);
-        digitalWrite(g_trigPin, LOW);
+        const int trigPin = 14; // D5
+        const int echoPin = 16; // D0
+        pinMode(trigPin, OUTPUT);
+        pinMode(echoPin, INPUT);
+        digitalWrite(trigPin, LOW);
         delayMicroseconds(2);
-        digitalWrite(g_trigPin, HIGH);
+        digitalWrite(trigPin, HIGH);
         delayMicroseconds(10);
-        digitalWrite(g_trigPin, LOW);
-        long duration = pulseIn(g_echoPin, HIGH);
+        digitalWrite(trigPin, LOW);
+        long duration = pulseIn(echoPin, HIGH, 6000);
         opInst.output(0) = (float)duration * 0.34f / 2.0f;
     }
 
