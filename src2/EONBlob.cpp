@@ -158,6 +158,7 @@ void Blob::skipValue(Offset &index) const
         {
             while (index < m_length && byte(index) != 0x0)
                 ++index;
+            ++index;
             break;
         }
     }
