@@ -1,4 +1,3 @@
-
 #include <ESP8266WiFi.h>
 #include <Hash.h>
 #include <ESP8266WebServer.h>
@@ -7,14 +6,13 @@
 
 #define NO_GLOBAL_SSDP
 #include "almilukESP8266SSDP.h"
+#include "WifiConn.h"
 
 #include "EONEval.h"
 
-#define NETNAME ""
-#define PASSWORD ""
-
-static const char g_SSID[] = "SciVi";
+static const char g_SSID[] = "SciVi::eon";
 static const char g_pass[] = "";
+
 ESP8266WebServer g_webServer(80);
 WebSocketsServer g_webSocket(81);
 
@@ -40,7 +38,7 @@ void webServerNotFound()
 	message += "\n";
 	for (uint8_t i = 0; i < g_webServer.args(); ++i)
 		message += " " + g_webServer.argName(i) + ": " + g_webServer.arg(i) + "\n";
-	g_webServer.send(404, "text/plain", message);
+	g_webServer.send(404, "text/plain", message); 
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
@@ -92,21 +90,9 @@ void setup()
 	Serial.println("=== SciVi ES v0.2 @ ESP8266 ===");
 	Serial.println();
 
-	//WiFi.softAP(g_SSID, g_pass);
-	WiFi.mode(WIFI_STA);
-	WiFi.begin(NETNAME, PASSWORD);
-	Serial.print("[SETUP] Waiting for WiFi connection");
-	while(!WiFi.localIP().isSet()){
-			Serial.print('.');
-			delay(500);
-	}
-	Serial.println("\n[SETUP] Connected to WiFi");
-
-	Serial.println("[SETUP] access point is up");
-	Serial.print("[SETUP] SSID: ");
-	Serial.println(g_SSID);
-	Serial.print("[SETUP] IP: ");
-	Serial.println(WiFi.softAPIP());
+	Serial.println("\n[SETUP] Connecting to WiFi:");
+	WiFi.setAutoReconnect(true);
+	WiFiConnector::InIt(g_SSID, g_pass);
 
 	g_webSocket.onEvent(webSocketEvent);
 	g_webSocket.begin();
@@ -118,12 +104,13 @@ void setup()
 	g_webServer.on("/ssdp/schema.xml", [](){
 		g_ssdp.schema(g_webServer.client());
 	});
+	WiFiConnector::SetupWebServer(g_webServer);
 	g_webServer.begin();
 
 	Serial.println("[SETUP] Web server started");
 
 	if(initSSDP())
-		Serial.println("[SETUP] SSDP begun");
+		Serial.println("[SETUP] SSDP started");
 	else	
 		Serial.println("[SETUP] SSDP init failed");
 	
@@ -135,7 +122,8 @@ void setup()
 void loop()
 {
 	g_eval.turn();
-
+	
+	g_ssdp.loop();
 	g_webSocket.loop();
 	g_webServer.handleClient();
 
