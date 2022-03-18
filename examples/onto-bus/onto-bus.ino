@@ -15,7 +15,7 @@ static const char g_pass[] = "";
 ESP8266WebServer g_webServer(80);
 WebSocketsServer g_webSocket(81);
 
-OneWire g_oneWireHub(D2);
+OneWire g_oneWireHub(D1);
 EON::Bus g_bus(&g_oneWireHub);
 
 EON::Eval g_eval;
