@@ -25,107 +25,111 @@
 
 namespace EON
 {
-    // Main types
     typedef uint16_t Offset;
-    typedef uint8_t Node;
-    typedef uint8_t Link;
-    static constexpr const Node InvalidNode = 0xFF;
-    static constexpr const Link InvalidLink = 0xFF;
-    // Link types
-    static constexpr const Link UseFor = 0x0;
+    typedef uint8_t  NodeID;
+    typedef uint16_t MotherNodeID;
 
-    struct Value
+    enum Type
     {
-        static constexpr const uint8_t UINT8   = 0;
-        static constexpr const uint8_t UINT16  = 1;
-        static constexpr const uint8_t UINT32  = 2;
-        static constexpr const uint8_t INT8    = 3;
-        static constexpr const uint8_t INT16   = 4;
-        static constexpr const uint8_t INT32   = 5;
-        static constexpr const uint8_t FLOAT   = 6;
-        static constexpr const uint8_t CSTRING = 7;
-        static constexpr const uint8_t DSTRING = 8;
-        static constexpr const uint8_t VEC3    = 9;
-        static constexpr const uint8_t VEC4    = 10;
-        static constexpr const uint8_t INVALID = 0xFF;
+        UINT8   = 0,
+        UINT16  = 1,
+        UINT32  = 2,
+        INT8    = 3,
+        INT16   = 4,
+        INT32   = 5,
+        FLOAT32 = 6,
+        STRING  = 7
+    };
+    enum InternalType
+    {
+        T_UINT,
+        T_INT,
+        T_FLOAT,
+        T_STRING,
+        T_INVALID
+    };
 
-        uint8_t type;
+    class Value
+    {
+        InternalType m_type;
         union
         {
-            uint8_t  ub;   // type = 0
-            uint16_t us;   // type = 1
-            uint32_t ui;   // type = 2
-            int8_t   b;    // type = 3
-            int16_t  s;    // type = 4
-            int32_t  i;    // type = 5
-            float    f;    // type = 6
-            Offset   addr; // type = 7, 8, 9, 10
-        } value;
+            uint32_t u;     // type = 0, 1, 2
+            int32_t  i;     // type = 3, 4, 5
+            float    f;     // type = 6
+            void     *addr; // type = 7+
+        } m_value;
 
-        inline static Value invalidValue()
+    public:
+        Value()
         {
-            Value result;
-            result.type = INVALID;
-            return result;
-        };
-        inline static Value floatValue(float v)
-        {
-            Value result;
-            result.type = FLOAT;
-            result.value.f = v;
-            return result;
-        };
-        inline static Value vec3Value(float x, float y, float z, Heap &heap)
-        {
-            Value result;
-            result.type = VEC3;
-            result.value.addr = heap.alloc(3 * sizeof(float));
-            float *vec3 = heap.get<float>(result.value.addr);
-            vec3[0] = x;
-            vec3[1] = y;
-            vec3[2] = z;
-            return result;
+            clear();
         };
 
-        inline bool invalid() const
+        void clear()
         {
-            return type == INVALID;
+            m_type = T_INVALID;
+            m_value.u = 0;
         };
-        template<class T> inline T typedValue() const
+
+        bool isValid() const
         {
-            switch (type)
+            return m_type != T_INVALID;
+        };
+
+        template<typename T> operator T() const
+        {
+            switch (m_type)
             {
-                case UINT8:
-                    return static_cast<T>(value.ub);
+                case T_UINT:
+                    return static_cast<T>(m_value.u);
 
-                case UINT16:
-                    return static_cast<T>(value.us);
+                case T_INT:
+                    return static_cast<T>(m_value.i);
 
-                case UINT32:
-                    return static_cast<T>(value.ui);
-
-                case INT8:
-                    return static_cast<T>(value.b);
-
-                case INT16:
-                    return static_cast<T>(value.s);
-
-                case INT32:
-                    return static_cast<T>(value.i);
-
-                case FLOAT:
-                    return static_cast<T>(value.f);
-
-                case CSTRING:
-                case DSTRING:
-                case VEC3:
-                case VEC4:
-                    return static_cast<T>(value.addr);
+                case T_FLOAT:
+                    return static_cast<T>(m_value.f);
 
                 default:
                     return static_cast<T>(0);
             }
         };
+        template<typename T> operator T*() const
+        {
+            switch (m_type)
+            {
+                case T_STRING:
+                    return static_cast<T*>(m_value.addr);
+
+                default:
+                    return NULL;
+            }
+        };
+
+        uint32_t operator =(uint32_t val)
+        {
+            m_type = T_UINT;
+            m_value.u = val;
+            return val;
+        };
+        int32_t operator =(int32_t val)
+        {
+            m_type = T_INT;
+            m_value.i = val;
+            return val;
+        };
+        float operator =(float val)
+        {
+            m_type = T_FLOAT;
+            m_value.f = val;
+            return val;
+        };
+        char *operator =(char *val)
+        {
+            m_type = T_STRING;
+            m_value.addr = val;
+            return val;
+        }
     };
 };
 

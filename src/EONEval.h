@@ -2,7 +2,7 @@
  * EONEval.h
  *
  * This file is part of SciVi (https://github.com/scivi-tools).
- * Copyright (c) 2019 Konstantin Ryabinin.
+ * Copyright (c) 2021 Konstantin Ryabinin.
  * 
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
@@ -20,26 +20,29 @@
 #ifndef __EONEVAL_H__
 #define __EONEVAL_H__
 
-#include "EONFunc.h"
+#include "EONOpInstance.h"
 
+
+#define OP_INSTANCES 256
 
 namespace EON
 {
     class Eval
     {
-    private:
-        Blob m_blob;
-        Func m_func;
-        Stack m_stack;
-        RingBuffer m_ringBuf;
         Heap m_heap;
-        Offset m_linkIndex;
+        Blob m_blob;
+        OpInstance *m_opInstances[OP_INSTANCES];
 
-        Value eval(Node address);
+        void fillSettings(OpInstance &opInst, NodeID opInstID);
+        void exec(NodeID opInstID);
 
     public:
-        inline bool load(uint8_t *blob, Offset length) { return m_blob.load(blob, length); };
-        inline void setup() { m_func.setup(); };
+        bool load(uint8_t *blob, Offset length)
+        {
+            return m_blob.load(blob, length);
+        };
+
+        void setup();
         void turn();
     };
 };

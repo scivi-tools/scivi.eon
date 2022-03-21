@@ -2,7 +2,7 @@
  * EONBlob.cpp
  *
  * This file is part of SciVi (https://github.com/scivi-tools).
- * Copyright (c) 2019 Konstantin Ryabinin.
+ * Copyright (c) 2021 Konstantin Ryabinin.
  * 
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
@@ -27,9 +27,11 @@ Blob::Blob()
 #if defined(ESP32) || defined(ESP8266)
     EEPROM.begin(4096);
 #endif // ESP
-    m_linkStart = sizeof(Offset);
-    m_attrStart = m_linkStart + offset(0) + sizeof(Offset);
-    m_blobLen = offset(0) + offset(m_attrStart - sizeof(Offset)) + sizeof(Offset) * 2;
+    m_length = 0;
+    m_dataFlowChunkLen = 0;
+    m_settingsChunkAddr = 0;
+    m_settingsChunkLen = 0;
+    m_keysChunkAddr = 0;
 }
 
 bool Blob::load(uint8_t *blob, Offset length)
@@ -50,85 +52,135 @@ bool Blob::load(uint8_t *blob, Offset length)
         EEPROM.update(i, blob[i]);
 #endif // ESP
 #endif // EON_RAM
-    m_blobLen = length;
-    m_linkStart = sizeof(Offset);
-    m_attrStart = m_linkStart + offset(0) + sizeof(Offset);
+    m_length = length;
+    m_dataFlowChunkLen = (Offset)byte(0) * 3;
+    m_settingsChunkAddr = m_dataFlowChunkLen + 3;
+    m_settingsChunkLen = readU16(m_dataFlowChunkLen + 1);
+    m_keysChunkAddr = m_settingsChunkAddr + readU16(m_settingsChunkAddr - 2);
     return true;
 }
 
-bool Blob::nextLink(Offset &linkIndex, Node &src, Node &dst, Link &lnk) const
+Value Blob::readValue(Offset &index, Heap &heap) const
 {
-    if (linkIndex < m_linkStart)
-        linkIndex = m_linkStart;
-    if (linkIndex >= m_attrStart - sizeof(Offset))
-        return false;
-
-    uint8_t lb1 = byte(linkIndex);
-    uint8_t lb2 = byte(linkIndex + 1);
-    linkIndex += 2;
-    src = lb1 >> 2;
-    lnk = ((lb1 & 0x3) << 2) | (lb2 >> 6);
-    dst = lb2 & 0x3F;
-
-    return true;
-}
-
-Value Blob::value(uint8_t selector, Offset &index) const
-{
-    Value result;
+    Type t = (Type)LWR(byte(index));
     ++index;
-    result.type = selector & 0x3F;
-    switch (result.type)
+    Value result;
+    switch (t)
     {
-        case Value::UINT8:
-        case Value::INT8:
-            result.value.ub = byte(index);
+        case UINT8:
+            result = (uint8_t)byte(index);
             ++index;
             break;
 
-        case Value::UINT16:
-        case Value::INT16:
-            result.value.us = (((uint16_t)byte(index)) << 8) | (uint16_t)byte(index + 1);
+        case UINT16:
+            result = ((uint16_t)byte(index) << 8) |
+                     (uint16_t)byte(index + 1);
             index += 2;
             break;
 
-        case Value::UINT32:
-        case Value::INT32:
-        case Value::FLOAT:
-            result.value.ui = (((uint32_t)byte(index)) << 24) | (((uint32_t)byte(index + 1)) << 16) |
-                              (((uint32_t)byte(index + 2)) << 8) | (uint32_t)byte(index);
+        case UINT32:
+            result = ((uint32_t)byte(index) << 24) |
+                     ((uint32_t)byte(index + 1) << 16) |
+                     ((uint32_t)byte(index + 2) << 8) |
+                     (uint32_t)byte(index + 3);
             index += 4;
             break;
 
-        case Value::CSTRING:
-            result.value.addr = index; // In fact a pointer to the string in memory.
-            while (byte(index) != 0x0) // String is null-terminated.
-                ++index;
+        case INT8:
+            result = (int8_t)byte(index);
             ++index;
             break;
+
+        case INT16:
+            result = ((int16_t)byte(index) << 8) |
+                     (int16_t)byte(index + 1);
+            index += 2;
+            break;
+
+        case INT32:
+            result = ((int32_t)byte(index) << 24) |
+                     ((int32_t)byte(index + 1) << 16) |
+                     ((int32_t)byte(index + 2) << 8) |
+                     (int32_t)byte(index + 3);
+            index += 4;
+            break;
+
+        case FLOAT32:
+            result = (float)(((uint32_t)byte(index) << 24) |
+                             ((uint32_t)byte(index + 1) << 16) |
+                             ((uint32_t)byte(index + 2) << 8) |
+                             (uint32_t)byte(index + 3));
+            index += 4;
+            break;
+
+        case STRING:
+        {
+            Offset n = index;
+            while (n < m_length && byte(n) != 0x0)
+                ++n;
+            if (n < m_length)
+            {
+                char *str = heap.alloc<char>(n - index + 1);
+                for (Offset i = index; i <= n; ++i)
+                    str[i - index] = byte(i);
+                result = str;
+                index = n + 1;
+            }
+            break;
+        }
     }
     return result;
 }
 
-Offset Blob::cString(Offset index, char *str) const
+void Blob::skipValue(Offset &index) const
 {
-    Offset len = 0;
-    while ((str[len] = byte(index)) != 0x0)
+    Type t = (Type)LWR(byte(index));
+    ++index;
+    switch (t)
     {
-        ++index;
-        ++len;
+        case UINT8:
+        case INT8:
+            ++index;
+            break;
+
+        case UINT16:
+        case INT16:
+            index += 2;
+            break;
+
+        case UINT32:
+        case INT32:
+        case FLOAT32:
+            index += 4;
+            break;
+
+        case STRING:
+        {
+            while (index < m_length && byte(index) != 0x0)
+                ++index;
+            ++index;
+            break;
+        }
     }
-    str[len] = 0x0;
-    return len + 1;
 }
 
-Offset Blob::cStringLen(Offset index) const
+MotherNodeID Blob::findMotherID(NodeID opInstID) const
 {
-    Offset len = 0;
-    while (byte(index) != 0x0)
+    Offset ptr = keysChunk();
+    while (ptr < m_length)
     {
-        ++index;
-        ++len;
+        MotherNodeID mID = readU16(ptr);
+        ptr += 2;
+        uint8_t b;
+        while (ptr < m_length)
+        {
+            b = byte(ptr);
+            ++ptr;
+            if (b == 0x0)
+                break;
+            else if (b == opInstID)
+                return mID;
+        }
     }
-    return len + 1;
+    return static_cast<MotherNodeID>(-1);
 }

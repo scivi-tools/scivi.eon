@@ -2,7 +2,7 @@
  * EONHeap.h
  *
  * This file is part of SciVi (https://github.com/scivi-tools).
- * Copyright (c) 2019 Konstantin Ryabinin.
+ * Copyright (c) 2021 Konstantin Ryabinin.
  * 
  * This program is free software: you can redistribute it and/or modify  
  * it under the terms of the GNU General Public License as published by  
@@ -21,42 +21,34 @@
 #define __EONHEAP_H__
 
 #include <stdint.h>
+#include <string.h>
 
 
-#define EON_HEAP_CAPACITY 1024
+#define EON_HEAP_CAPACITY 4096
+#define ALIGN(x, align) (((x + (align - 1)) / align) * align)
 
 namespace EON
 {
     class Heap
     {
-    private:
         uint8_t m_heap[EON_HEAP_CAPACITY];
         uint16_t m_ptr;
 
     public:
-        inline void clear()
+        Heap()
+        {
+            clear();
+        };
+
+        void clear()
         {
             m_ptr = 0;
         };
-
-        inline uint16_t alloc(uint16_t n)
+        template<class T> T *alloc(uint16_t count = 1)
         {
-            if (m_ptr + n >= EON_HEAP_CAPACITY)
-            {
-                m_ptr = n;
-                return 0;
-            }
-            else
-            {
-                uint16_t result = m_ptr;
-                m_ptr += n;
-                return result;
-            }
-        };
-
-        template<class T> inline T *get(uint16_t index)
-        {
-            return reinterpret_cast<T *>(&m_heap[index]);
+            T *result = reinterpret_cast<T*>(&m_heap[m_ptr]);
+            m_ptr += ALIGN(sizeof(T) * count, 4);
+            return result;
         };
     };
 };
