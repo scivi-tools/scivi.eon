@@ -9,6 +9,10 @@
 #include "EONBus.h"
 
 
+#define CMD_LOAD_EON 0xE0
+#define CMD_SCAN_BUS 0xE1
+#define CMD_PING_DEV 0xE2
+
 static const char g_SSID[] = "SciVi";
 static const char g_pass[] = "";
 
@@ -19,7 +23,6 @@ OneWire g_oneWireHub(D1);
 EON::Bus g_bus(&g_oneWireHub);
 
 EON::Eval g_eval;
-
 
 void webServerRoot()
 {
@@ -40,6 +43,20 @@ void webServerNotFound()
     for (uint8_t i = 0; i < g_webServer.args(); ++i)
         message += " " + g_webServer.argName(i) + ": " + g_webServer.arg(i) + "\n";
     g_webServer.send(404, "text/plain", message);
+}
+
+String scanBus()
+{
+    uint8_t dc = g_bus.scan();
+    String result = String("{\"bus\":[");
+    for (uint8_t i = 0; i < dc; ++i)
+    {
+        result += String("{\"") + String(g_bus.deviceID(i)) + String("\":") + String(g_bus.deviceUID(i)) + String("}");
+        if (i < dc - 1)
+            result += String(",");
+    }
+    result += String("]}");
+    return result;
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
@@ -63,12 +80,26 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                 Serial.print(" ");
             }
             Serial.println("");
-            g_eval.load(payload, length); // TODO: handle error (if false returned)
+            switch (payload[0])
+            {
+                case CMD_LOAD_EON:
+                    g_eval.load(&payload[1], length - 1); // TODO: handle error (if false returned)
+                    break;
+
+                case CMD_SCAN_BUS:
+                {
+                    String msg = scanBus();
+                    g_webSocket.sendTXT(num, msg);
+                }
+                    break;
+
+                case CMD_PING_DEV:
+                    g_bus.ping(&payload[1]);
+                    break;
+            }
             break;
     }
 }
-
-
 
 void setup()
 {
@@ -106,14 +137,14 @@ void setup()
 void loop()
 {
     //g_eval.turn();
-    uint8_t dc = g_bus.scan();
-    Serial.print("Devices on bus: ");
-    Serial.println(dc);
-    if (dc > 0)
-    {
-        g_bus.send(g_bus.device(0), 0xDD);
-        Serial.println(g_bus.read());
-    }
+    //uint8_t dc = g_bus.scan();
+    //Serial.print("Devices on bus: ");
+    //Serial.println(dc);
+    //if (dc > 0)
+    //{
+    //    g_bus.send(g_bus.device(0), 0xDD);
+    //    Serial.println(g_bus.read());
+    //}
 
     g_webSocket.loop();
     g_webServer.handleClient();

@@ -24,12 +24,24 @@
 
 
 #define MAX_DEVICES_NUMBER 16
+#define CMD_PING 0xEE
 
 namespace EON
 {
     class Bus
     {
         OneWire *m_1w;
+        /**
+         * Structure of address:
+         *     0        1        2        3        4        5        6        7
+         * |--------|--------|--------|--------|--------|--------|--------|--------|
+         * |  0xE0  |  0xXX  |  0xXX  |  0xXX  |  0xXX  |  0xXX  |  0xXX  |  0xFF  |
+         * |--------|-----------------|-----------------------------------|--------|
+         * |  EON   |   ID of mother  |            UID of device          |  CRC   |
+         * | device |       node      |                                   |        |
+         * | family |                 |                                   |        |
+         * |--------|-----------------|-----------------------------------|--------|
+         */
         uint8_t m_addresses[MAX_DEVICES_NUMBER][8];
 
     public:
@@ -59,20 +71,48 @@ namespace EON
             }
             return devCount;
         };
+
         /**
          * Get the devices address.
          *
          * @param index - index of device on the bus.
          * @return address of the requested device or null incase of incorrect index.
          */
-        uint8_t *device(uint8_t index)
+        const uint8_t *device(uint8_t index) const
         {
             return index < MAX_DEVICES_NUMBER ? m_addresses[index] : nullptr;
         };
+
+        /**
+         * Get the mother node ID of the device ontological description.
+         *
+         * @param index - index of device on the bus.
+         * @return mother node ID of the device.
+         */
+        uint16_t deviceID(uint8_t index) const
+        {
+            return index < MAX_DEVICES_NUMBER ?
+                   (m_addresses[index][1] << 8) | m_addresses[index][2] :
+                   (uint16_t)-1;
+        };
+
+        /**
+         * Get device UID.
+         *
+         * @param index - index of device on the bus.
+         * @return device UID.
+         */
+        uint32_t deviceUID(uint8_t index) const
+        {
+            return index < MAX_DEVICES_NUMBER ?
+                   (m_addresses[index][3] << 24) | (m_addresses[index][4] << 16) | (m_addresses[index][5] << 8) | m_addresses[index][6] :
+                   0;
+        }
+
         /**
          * Send byte to given device.
          *
-         * @param address - address of device
+         * @param address - address of device.
          * @param data - byte to send.
          */
         void send(uint8_t *address, uint8_t data)
@@ -81,6 +121,7 @@ namespace EON
             m_1w->select(address);
             m_1w->write(data);
         };
+
         /**
          * Send array of bytes to given device.
          *
@@ -95,6 +136,7 @@ namespace EON
             for (uint16_t i = 0; i < length; ++i)
                 m_1w->write(data[i]);
         };
+
         /**
          * Receive byte from the bus.
          *
@@ -104,6 +146,7 @@ namespace EON
         {
             return m_1w->read();
         };
+
         /**
          * Receive array of bytes from the bus.
          *
@@ -114,6 +157,16 @@ namespace EON
         {
             for (uint16_t i = 0; i < length; ++i)
                 data[i] = m_1w->read();
+        };
+
+        /**
+         * Ping device on the bus.
+         *
+         * @param address - address of device to ping.
+         */
+        void ping(uint8_t *address)
+        {
+            send(address, CMD_PING);
         };
     };
 }
