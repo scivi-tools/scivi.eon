@@ -104,7 +104,7 @@ void setup()
 	g_webServer.on("/ssdp/schema.xml", [](){
 		g_ssdp.schema(g_webServer.client());
 	});
-	WiFiConnector::SetupWebServer(g_webServer, true);
+	WiFiConnector::SetupWebServer(g_webServer, "set-network", true);
 	g_webServer.begin();
 
 	Serial.println("[SETUP] Web server started");

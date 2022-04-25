@@ -116,12 +116,12 @@ void WiFiConnector::SetAPData(const char *ssid, const char *pass){
 	strncpy(apPass, pass, PASS_SIZE);
 }
 
-void WiFiConnector::SetupWebServer(ESP8266WebServer &server, bool save_data_prgm){	
-	server.on("/set-network", HTTP_GET, [&server]() {
+void WiFiConnector::SetupWebServer(ESP8266WebServer &server, const char *endpoint, bool save_data_prgm){	
+	server.on(endpoint, HTTP_GET, [&server]() {
 		server.send_P(200, "text/html", html_set_network);
 	});
 	
-	server.on("/set-network", HTTP_POST, [&server, save_data_prgm]() {
+	server.on(endpoint, HTTP_POST, [&server, save_data_prgm]() {
 		String ssid = server.arg("ssid");
 		String pass = server.arg("pass");
 		if (ssid != ""){
