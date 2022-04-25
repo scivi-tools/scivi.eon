@@ -103,7 +103,7 @@ static char apSsid[SSID_SIZE + 1] = "ESP8266";
 static char apPass[PASS_SIZE + 1] = "\0";
 
 
-void WiFiConnector::InIt(const char *ap_ssid, const char *ap_pass){
+void WiFiConnector::Init(const char *ap_ssid, const char *ap_pass){
 	SetAPData(ap_ssid, ap_pass);
 	char ssid[SSID_SIZE + 1];
 	char pass[PASS_SIZE + 1];
@@ -116,26 +116,25 @@ void WiFiConnector::SetAPData(const char *ssid, const char *pass){
 	strncpy(apPass, pass, PASS_SIZE);
 }
 
-void WiFiConnector::SetupWebServer(ESP8266WebServer &server){	
+void WiFiConnector::SetupWebServer(ESP8266WebServer &server, bool save_data_prgm){	
 	server.on("/set-network", HTTP_GET, [&server]() {
 		server.send_P(200, "text/html", html_set_network);
 	});
 	
-	server.on("/set-network", HTTP_POST, [&server]() {
+	server.on("/set-network", HTTP_POST, [&server, save_data_prgm]() {
 		String ssid = server.arg("ssid");
 		String pass = server.arg("pass");
 		if (ssid != ""){
 			server.send_P(200, "text/html", html_save_network);
 			delay(500);
-			ConnectWiFi(ssid.c_str(), pass.c_str());
+			ConnectWiFi(ssid.c_str(), pass.c_str(), save_data_prgm);
 		} else {
 			server.send_P(400, "text/plain", "Invalid arguments.");
 		}
 	});
 }
 
-void WiFiConnector::ConnectWiFi(const char *ssid, const char *pass, bool save_network)
-{
+void WiFiConnector::ConnectWiFi(const char *ssid, const char *pass, bool save_network) {
 	WiFi.mode(WIFI_STA);
 	if (ssid && pass)
 		WiFi.begin(ssid, pass);

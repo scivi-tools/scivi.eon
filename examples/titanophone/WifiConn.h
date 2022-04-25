@@ -9,10 +9,10 @@
 	
 class WiFiConnector{
 public:
-	static void InIt(const char *ap_ssid, const char *ap_pass);
+	static void Init(const char *ap_ssid, const char *ap_pass);
 	static void SetAPData(const char *ssid, const char *pass);
-	static void SetupWebServer(ESP8266WebServer& server);
-	static void ConnectWiFi(const char *ssid, const char *pass, bool save_network= true);
+	static void SetupWebServer(ESP8266WebServer& server, bool save_data_prgm);
+	static void ConnectWiFi(const char *ssid, const char *pass, bool save_network=true);
 private:
 	static void EEPROMGetStr(uint16_t start_addr, char* buffer, uint16_t len);
 	static void EEPROMPutStr(uint16_t start_addr, const char* buffer, uint16_t len);

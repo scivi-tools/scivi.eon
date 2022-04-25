@@ -92,7 +92,7 @@ void setup()
 
 	Serial.println("\n[SETUP] Connecting to WiFi:");
 	WiFi.setAutoReconnect(true);
-	WiFiConnector::InIt(g_SSID, g_pass);
+	WiFiConnector::Init(g_SSID, g_pass);
 
 	g_webSocket.onEvent(webSocketEvent);
 	g_webSocket.begin();
@@ -104,7 +104,7 @@ void setup()
 	g_webServer.on("/ssdp/schema.xml", [](){
 		g_ssdp.schema(g_webServer.client());
 	});
-	WiFiConnector::SetupWebServer(g_webServer);
+	WiFiConnector::SetupWebServer(g_webServer, true);
 	g_webServer.begin();
 
 	Serial.println("[SETUP] Web server started");
