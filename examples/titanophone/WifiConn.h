@@ -9,7 +9,7 @@
 	
 class WiFiConnector{
 public:
-	static void Init(const char *ap_ssid, const char *ap_pass);
+	static void Init(const char *ap_ssid, const char *ap_pass, uint16_t start_sddr = 0);
 	static void SetAPData(const char *ssid, const char *pass);
 	static void SetupWebServer(ESP8266WebServer& server, const char *endpoint, bool save_data_prgm);
 	static void ConnectWiFi(const char *ssid, const char *pass, bool save_network=true);

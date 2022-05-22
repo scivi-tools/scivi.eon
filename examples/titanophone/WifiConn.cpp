@@ -3,6 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 
+static uint16_t start_eeprom_addr = 0;
 
 static const char html_set_network[] PROGMEM = R"=HTML=(
 <!DOCTYPE html>
@@ -103,8 +104,9 @@ static char apSsid[SSID_SIZE + 1] = "ESP8266";
 static char apPass[PASS_SIZE + 1] = "\0";
 
 
-void WiFiConnector::Init(const char *ap_ssid, const char *ap_pass){
-	SetAPData(ap_ssid, ap_pass);
+void WiFiConnector::Init(const char *ap_ssid, const char *ap_pass, uint16_t start_sddr){
+	start_eeprom_addr = start_sddr;
+	SetAPData(ap_ssid, ap_pass);	
 	char ssid[SSID_SIZE + 1];
 	char pass[PASS_SIZE + 1];
 	loadNetworkInfo(ssid, pass);
@@ -174,9 +176,9 @@ void WiFiConnector::ConnectWiFi(const char *ssid, const char *pass, bool save_ne
 					loadNetworkInfo(prev_ssid, prev_pass);
 					if(strcmp(prev_ssid, ssid) || strcmp(prev_pass, pass)){
 						saveNetworkInfo(ssid, pass);
-						Serial.println("Saved");
+						Serial.println("Saved the network");
 					} else {
-						Serial.println("Didn't save");
+						Serial.println("Didn't save the network");
 					}
 				}
 				
@@ -185,7 +187,7 @@ void WiFiConnector::ConnectWiFi(const char *ssid, const char *pass, bool save_ne
 
 			case WL_CONNECT_FAILED:
 				Serial.println();
-				Serial.print("Connection failed.");
+				Serial.print("Connection failed");
 				i = 30;
 				break;
 						
@@ -197,7 +199,7 @@ void WiFiConnector::ConnectWiFi(const char *ssid, const char *pass, bool save_ne
 		}
 	}
 	
-	Serial.println("\nConnection timeout passed.");
+	Serial.println("\nConnection timeout passed");
 	WiFi.mode(WIFI_AP);
 	WiFi.softAP(apSsid, apPass);
 
@@ -225,11 +227,11 @@ void WiFiConnector::EEPROMPutStr(uint16_t start_addr, const char* buffer, uint16
 }
 
 void WiFiConnector::saveNetworkInfo(const char* ssid, const char* pass){
-	EEPROMPutStr(0, ssid, SSID_SIZE);
-	EEPROMPutStr(SSID_SIZE + 1, pass, PASS_SIZE);
+	EEPROMPutStr(start_eeprom_addr, ssid, SSID_SIZE);
+	EEPROMPutStr(start_eeprom_addr + SSID_SIZE + 1, pass, PASS_SIZE);
 }
 
 void WiFiConnector::loadNetworkInfo(char* ssid, char* pass){
-	EEPROMGetStr(0, ssid, SSID_SIZE);
-	EEPROMGetStr(SSID_SIZE + 1, pass, PASS_SIZE);	
+	EEPROMGetStr(start_eeprom_addr, ssid, SSID_SIZE);
+	EEPROMGetStr(start_eeprom_addr + SSID_SIZE + 1, pass, PASS_SIZE);	
 }
