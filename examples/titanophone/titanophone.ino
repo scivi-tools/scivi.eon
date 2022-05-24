@@ -62,7 +62,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                 Serial.print(" ");
             }
             Serial.println("");
-            g_eval.load(payload, length); // TODO: handle error (if false returned)
+            g_eval.load(&payload[1], length); // TODO: handle error (if false returned)
             break;
     }
 }
