@@ -22,110 +22,110 @@ EON::Eval g_eval;
 
 void webServerRoot()
 {
-	g_webServer.sendHeader("Location", "/index.htm", true);
-	g_webServer.send(302, "text/plane", "");
+    g_webServer.sendHeader("Location", "/index.htm", true);
+    g_webServer.send(302, "text/plane", "");
 }
 
 void webServerNotFound()
 {
-	String message = "File Not Found\n\n";
-	message += "URI: ";
-	message += g_webServer.uri();
-	message += "\nMethod: ";
-	message += (g_webServer.method() == HTTP_GET) ? "GET" : "POST";
-	message += "\nArguments: ";
-	message += g_webServer.args();
-	message += "\n";
-	for (uint8_t i = 0; i < g_webServer.args(); ++i)
-		message += " " + g_webServer.argName(i) + ": " + g_webServer.arg(i) + "\n";
-	g_webServer.send(404, "text/plain", message); 
+    String message = "File Not Found\n\n";
+    message += "URI: ";
+    message += g_webServer.uri();
+    message += "\nMethod: ";
+    message += (g_webServer.method() == HTTP_GET) ? "GET" : "POST";
+    message += "\nArguments: ";
+    message += g_webServer.args();
+    message += "\n";
+    for (uint8_t i = 0; i < g_webServer.args(); ++i)
+        message += " " + g_webServer.argName(i) + ": " + g_webServer.arg(i) + "\n";
+    g_webServer.send(404, "text/plain", message); 
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {
-	switch (type)
-	{
-		case WStype_CONNECTED:
-			break;
+    switch (type)
+    {
+        case WStype_CONNECTED:
+            break;
 
-		case WStype_DISCONNECTED:
-			break;
+        case WStype_DISCONNECTED:
+            break;
 
-		case WStype_TEXT:
-			break;
+        case WStype_TEXT:
+            break;
 
-		case WStype_BIN:
-			Serial.println(">>> Binary frame!!!");
-			for (int i = 0; i < length; ++i)
-			{
-				Serial.print(payload[i]); 
-				Serial.print(" ");
-			}
-			Serial.println("");
-			g_eval.load(payload, length); // TODO: handle error (if false returned)
-			break;
-	}
+        case WStype_BIN:
+            Serial.println(">>> Binary frame!!!");
+            for (int i = 0; i < length; ++i)
+            {
+                Serial.print(payload[i]); 
+                Serial.print(" ");
+            }
+            Serial.println("");
+            g_eval.load(payload, length); // TODO: handle error (if false returned)
+            break;
+    }
 }
 
 bool initSSDP(){
-	SSDPClass::SSDPServiceType services[] = {
-		{"scivi", "ADC", "56bf9ef3c5244aca1620d52eb7c56ab7a38bc223"}
-	};
-	g_ssdp.setServiceTypes(services, 2);
-	g_ssdp.setDeviceType("schemas-scivi-tool", "eon-esp8266", "test");
-	g_ssdp.setName("scivi eon on esp8266");
-	g_ssdp.setManufacturer("scivi-tools");
-	g_ssdp.setManufacturerURL("https://scivi.tools/");
-	g_ssdp.setModelURL("https://github.com/scivi-tools/scivi.eon/tree/56bf9ef3c5244aca1620d52eb7c56ab7a38bc223");
-	g_ssdp.setURL("https://github.com/scivi-tools/scivi.eon");
-	return g_ssdp.begin();
+    SSDPClass::SSDPServiceType services[] = {
+        {"scivi", "ADC", "56bf9ef3c5244aca1620d52eb7c56ab7a38bc223"}
+    };
+    g_ssdp.setServiceTypes(services, 2);
+    g_ssdp.setDeviceType("schemas-scivi-tool", "eon-esp8266", "test");
+    g_ssdp.setName("scivi eon on esp8266");
+    g_ssdp.setManufacturer("scivi-tools");
+    g_ssdp.setManufacturerURL("https://scivi.tools/");
+    g_ssdp.setModelURL("https://github.com/scivi-tools/scivi.eon/tree/56bf9ef3c5244aca1620d52eb7c56ab7a38bc223");
+    g_ssdp.setURL("https://github.com/scivi-tools/scivi.eon");
+    return g_ssdp.begin();
 }
 
 void setup()
 {
-	delay(1000);
-	
-	Serial.begin(115200);
-	Serial.println();
-	Serial.println("=== SciVi ES v0.2 @ ESP8266 ===");
-	Serial.println();
+    delay(1000);
+    
+    Serial.begin(115200);
+    Serial.println();
+    Serial.println("=== SciVi ES v0.2 @ ESP8266 ===");
+    Serial.println();
 
-	Serial.println("\n[SETUP] Connecting to WiFi:");
-	WiFi.setAutoReconnect(true);
-	WiFiConnector::Init(g_SSID, g_pass);
+    Serial.println("\n[SETUP] Connecting to WiFi:");
+    WiFi.setAutoReconnect(true);
+    WiFiConnector::Init(g_SSID, g_pass);
 
-	g_webSocket.onEvent(webSocketEvent);
-	g_webSocket.begin();
+    g_webSocket.onEvent(webSocketEvent);
+    g_webSocket.begin();
 
-	Serial.println("[SETUP] WebSocket server started");
+    Serial.println("[SETUP] WebSocket server started");
 
-	g_webServer.onNotFound(webServerNotFound);
-	g_webServer.on("/", webServerRoot);
-	g_webServer.on("/ssdp/schema.xml", [](){
-		g_ssdp.schema(g_webServer.client());
-	});
-	WiFiConnector::SetupWebServer(g_webServer, "set-network", true);
-	g_webServer.begin();
+    g_webServer.onNotFound(webServerNotFound);
+    g_webServer.on("/", webServerRoot);
+    g_webServer.on("/ssdp/schema.xml", [](){
+        g_ssdp.schema(g_webServer.client());
+    });
+    WiFiConnector::SetupWebServer(g_webServer, "set-network", true);
+    g_webServer.begin();
 
-	Serial.println("[SETUP] Web server started");
+    Serial.println("[SETUP] Web server started");
 
-	if(initSSDP())
-		Serial.println("[SETUP] SSDP started");
-	else	
-		Serial.println("[SETUP] SSDP init failed");
-	
-	g_eval.setup();
+    if(initSSDP())
+        Serial.println("[SETUP] SSDP started");
+    else
+        Serial.println("[SETUP] SSDP init failed");
+    
+    g_eval.setup();
 
-	Serial.println("[SETUP] EON started");
+    Serial.println("[SETUP] EON started");
 }
 
 void loop()
 {
-	g_eval.turn();
-	
-	g_ssdp.loop();
-	g_webSocket.loop();
-	g_webServer.handleClient();
+    g_eval.turn();
+    
+    g_ssdp.loop();
+    g_webSocket.loop();
+    g_webServer.handleClient();
 
-	delay(16);
+    delay(16);
 }
