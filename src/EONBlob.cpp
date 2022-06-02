@@ -24,9 +24,11 @@ using namespace EON;
 
 Blob::Blob()
 {
+#ifndef EON_RAM
 #if defined(ESP32) || defined(ESP8266)
     EEPROM.begin(4096);
 #endif // ESP
+#endif // !EON_RAM
     m_length = 0;
     m_dataFlowChunkLen = 0;
     m_settingsChunkAddr = 0;

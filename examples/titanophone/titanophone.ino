@@ -62,17 +62,17 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                 Serial.print(" ");
             }
             Serial.println("");
-            g_eval.load(&payload[1], length); // TODO: handle error (if false returned)
+            g_eval.load(&payload[1], length - 1); // TODO: handle error (if false returned)
             break;
     }
 }
 
 bool initSSDP(){
-    SSDPClass::SSDPServiceType services[] = {
-        {"scivi", "ADC", "56bf9ef3c5244aca1620d52eb7c56ab7a38bc223"}
-    };
-    g_ssdp.setServiceTypes(services, 2);
-    g_ssdp.setDeviceType("schemas-scivi-tool", "eon-esp8266", "test");
+    // SSDPClass::SSDPServiceType services[] = {
+    //     {"scivi", "ADC", "56bf9ef3c5244aca1620d52eb7c56ab7a38bc223"}
+    // };
+    // g_ssdp.setServiceTypes(services, 1);
+    g_ssdp.setDeviceType("edge-scivi", "eon-esp8266", "2.0");
     g_ssdp.setName("scivi eon on esp8266");
     g_ssdp.setManufacturer("scivi-tools");
     g_ssdp.setManufacturerURL("https://scivi.tools/");
@@ -104,7 +104,7 @@ void setup()
     g_webServer.on("/ssdp/schema.xml", [](){
         g_ssdp.schema(g_webServer.client());
     });
-    WiFiConnector::SetupWebServer(g_webServer, "set-network", true);
+    WiFiConnector::SetupWebServer(g_webServer, "/set-network", true);
     g_webServer.begin();
 
     Serial.println("[SETUP] Web server started");
