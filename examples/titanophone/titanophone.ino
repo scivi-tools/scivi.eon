@@ -41,6 +41,18 @@ void webServerNotFound()
     g_webServer.send(404, "text/plain", message); 
 }
 
+void doPong()
+{
+    pinMode(LED_BUILTIN, OUTPUT);
+    for (int i = 0; i < 3; ++i)
+    {
+        pinMode(LED_BUILTIN, HIGH);
+        delay(166);
+        pinMode(LED_BUILTIN, LOW);
+        delay(166);
+    }
+}
+
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
 {
     switch (type)
@@ -62,7 +74,16 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
                 Serial.print(" ");
             }
             Serial.println("");
-            g_eval.load(&payload[1], length - 1); // TODO: handle error (if false returned)
+            switch (payload[0])
+            {
+                case 0x0D:
+                    doPong();
+                    break;
+
+                case 0x0E:
+                    g_eval.load(&payload[1], length - 1); // TODO: handle error (if false returned)
+                    break;
+            }
             break;
     }
 }
